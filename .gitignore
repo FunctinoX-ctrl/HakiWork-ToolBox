@@ -1,0 +1,53 @@
+# Build outputs
+dist/
+out/
+build/
+release/
+*.tsbuildinfo
+
+# Node
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Electron packaged apps
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.zip
+
+# Temp files
+*.tmp
+*.temp
+
+# TypeScript build artifacts in src
+src/**/*.d.ts
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts.map
+
+# HakiWork project temp
+patch_*.css
+run-test.js
+fix_*.js
