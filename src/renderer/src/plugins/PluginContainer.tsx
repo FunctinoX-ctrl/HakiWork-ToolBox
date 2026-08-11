@@ -28,34 +28,25 @@ export default function PluginContainer({ pluginId, manifest, hostAPI }: PluginC
     (async () => {
       try {
         setLoading(true);
-        // Try multiple possible paths for compiled plugin
-        const possiblePaths = [
-          `../../../dist/plugins/${manifest.package}/${pluginId}/src/index.js`,
-          `../../../dist/plugins/plugins/${manifest.package}/${pluginId}/src/index.js`,
-        ];
+        // Path from dist/renderer/assets/*.js to dist/plugins/com.hakiwork/image-processor/src/index.js
+        // dist/renderer/assets/xxx.js -> dist/ (2 levels up) -> plugins/ (1 level down)
+        // So from renderer asset: ../../../plugins/com.hakiwork/image-processor/src/index.js
+        const pluginPath = `../../../plugins/${manifest.package}/${pluginId}/src/index.js`;
+        console.log('[PluginContainer] Trying to load:', pluginPath);
 
-        let loaded = false;
-        for (const p of possiblePaths) {
-          try {
-            const mod = await import(/* @vite-ignore */ p);
-            const PluginClass = mod.default || mod[Object.keys(mod)[0]];
-            if (PluginClass) {
-              const instance = new PluginClass(manifest);
-              await instance.initialize();
-              const Comp = instance.getRenderComponent();
-              if (Comp) {
-                setPluginComponent(() => Comp);
-                loaded = true;
-                break;
-              }
-            }
-          } catch (e) {
-            continue;
-          }
+        const mod = await import(/* @vite-ignore */ pluginPath);
+        const PluginClass = mod.default || mod[Object.keys(mod)[0]];
+        if (!PluginClass) {
+          setError('No plugin class found');
+          return;
         }
-
-        if (!loaded) {
-          setError('Plugin component not found');
+        const instance = new PluginClass(manifest);
+        await instance.initialize();
+        const Comp = instance.getRenderComponent();
+        if (Comp) {
+          setPluginComponent(() => Comp);
+        } else {
+          setError('Plugin has no render component');
         }
       } catch (err: any) {
         console.error('[PluginContainer] Failed to load plugin:', err);
@@ -98,7 +89,6 @@ export default function PluginContainer({ pluginId, manifest, hostAPI }: PluginC
     );
   }
 
-  // Render the actual plugin component
   if (PluginComponent) {
     return <PluginComponent hostAPI={hostAPI} pluginId={pluginId} />;
   }

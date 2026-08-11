@@ -15,7 +15,9 @@ export interface PluginEntry {
   source: 'compiled' | 'source' | 'community'
 }
 
-const SOURCE_PLUGINS_DIR = path.join(__dirname, '../../../plugins')
+// dist/main/index.js -> dist/plugins/ is ../../plugins
+// dist/main/index.js -> plugins/ (source) is ../../plugins
+const SOURCE_PLUGINS_DIR = path.join(__dirname, '../../plugins')
 const COMPILED_PLUGINS_DIR = path.join(__dirname, '../../plugins')
 
 function getCommunityPluginsDir(): string {
@@ -23,8 +25,7 @@ function getCommunityPluginsDir(): string {
   return path.join(home, 'plugins', 'plugins-files')
 }
 
-// Recursively find all plugin dirs (package/plugin/ structure)
-function findPluginDirs(rootDir: string, source: 'compiled' | 'source' | 'community'): string[] {
+function findPluginDirs(rootDir: string): string[] {
   const dirs: string[] = []
   if (!fs.existsSync(rootDir)) return dirs
   for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
@@ -33,7 +34,6 @@ function findPluginDirs(rootDir: string, source: 'compiled' | 'source' | 'commun
     for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
       if (sub.isDirectory()) {
         const pluginDir = path.join(pkgDir, sub.name)
-        // Check if it has a manifest.json
         if (fs.existsSync(path.join(pluginDir, 'manifest.json'))) {
           dirs.push(pluginDir)
         }
@@ -51,6 +51,7 @@ export class PluginManager {
     for (const dir of allDirs) {
       await this.loadPluginFromDir(dir)
     }
+    console.log('[PluginManager] Total plugins loaded:', this.plugins.size)
   }
 
   private getAllPluginDirs(): string[] {
@@ -65,13 +66,13 @@ export class PluginManager {
 
     // 1. Community plugins (highest priority)
     const communityDir = getCommunityPluginsDir()
-    for (const dir of findPluginDirs(communityDir, 'community')) addDir(dir, 'community')
+    for (const dir of findPluginDirs(communityDir)) addDir(dir, 'community')
 
-    // 2. Compiled plugins
-    for (const dir of findPluginDirs(COMPILED_PLUGINS_DIR, 'compiled')) addDir(dir, 'compiled')
+    // 2. Compiled plugins (dist/plugins/)
+    for (const dir of findPluginDirs(COMPILED_PLUGINS_DIR)) addDir(dir, 'compiled')
 
-    // 3. Source plugins (development)
-    for (const dir of findPluginDirs(SOURCE_PLUGINS_DIR, 'source')) addDir(dir, 'source')
+    // 3. Source plugins (same dir as compiled in our setup)
+    // Already covered by compiled since they share the same path
 
     return dirs
   }
@@ -110,9 +111,9 @@ export class PluginManager {
       manifest,
       instance: null,
       enabled: true,
-      source: 'source',
+      source: 'compiled',
     })
-    console.log('[PluginManager] Loaded plugin: ' + pluginId + ' v' + manifest.version + ' [' + (manifest.package || 'default') + ']')
+    console.log('[PluginManager] Loaded plugin: ' + pluginId + ' v' + manifest.version + ' ready=' + manifest.ready)
   }
 
   getPluginList(): PluginEntry[] {
@@ -130,10 +131,10 @@ export class PluginManager {
 
     try {
       const pluginDir = this.findPluginDir(id)
-      // Try compiled .js first, then .ts
       const jsEntryPath = path.join(pluginDir, entry.manifest.main.replace(/\.ts$/, '.js'))
       const tsEntryPath = path.join(pluginDir, entry.manifest.main)
       const entryPath = fs.existsSync(jsEntryPath) ? jsEntryPath : tsEntryPath
+      console.log('[PluginManager] Loading plugin from:', entryPath)
       const mod = await import(entryPath)
       const PluginClass = mod.default || mod[Object.keys(mod)[0]]
       if (!PluginClass) throw new Error('No default export found')
@@ -187,18 +188,6 @@ export class PluginManager {
         }
       }
     }
-    // Fallback to source
-    if (fs.existsSync(SOURCE_PLUGINS_DIR)) {
-      for (const entry of fs.readdirSync(SOURCE_PLUGINS_DIR, { withFileTypes: true })) {
-        if (!entry.isDirectory()) continue
-        const pkgDir = path.join(SOURCE_PLUGINS_DIR, entry.name)
-        for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
-          if (sub.isDirectory() && sub.name === id && fs.existsSync(path.join(pkgDir, sub.name, 'manifest.json'))) {
-            return path.join(pkgDir, sub.name)
-          }
-        }
-      }
-    }
-    return SOURCE_PLUGINS_DIR
+    return COMPILED_PLUGINS_DIR
   }
 }
