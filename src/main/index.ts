@@ -1,6 +1,7 @@
 // Main process entry point
 import { app, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
+import * as fs from 'fs'
 import { PluginManager } from './plugin-manager'
 import { createHostAPI } from './host-api/index'
 import { IPC_CHANNELS } from '@shared/host-api-types'
@@ -43,6 +44,7 @@ function createWindow() {
 }
 
 function setupIpc() {
+  // HostAPI calls
   ipcMain.handle(IPC_CHANNELS.HOST_API_CALL, async (_event, { method, args }) => {
     try {
       const api = createHostAPI(mainWindow!)
@@ -53,26 +55,22 @@ function setupIpc() {
     }
   })
 
+  // App data path
   ipcMain.handle(IPC_CHANNELS.GET_APP_DATA_PATH, async () => {
     return app.getPath('userData')
   })
 
+  // Plugin message (renderer -> main -> plugin)
   ipcMain.on(IPC_CHANNELS.PLUGIN_MESSAGE, (event, msg) => {
     pluginManager?.handlePluginMessage(msg)
   })
 
-  // Window control handlers
-  ipcMain.handle(IPC_CHANNELS.WIN_MINIMIZE, () => {
-    mainWindow?.minimize()
-  })
+  // Window controls
+  ipcMain.handle(IPC_CHANNELS.WIN_MINIMIZE, () => { mainWindow?.minimize() })
   ipcMain.handle(IPC_CHANNELS.WIN_MAXIMIZE, () => {
-    if (mainWindow) {
-      mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize()
-    }
+    if (mainWindow) mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize()
   })
-  ipcMain.handle(IPC_CHANNELS.WIN_CLOSE, () => {
-    mainWindow?.close()
-  })
+  ipcMain.handle(IPC_CHANNELS.WIN_CLOSE, () => { mainWindow?.close() })
 }
 
 async function bootstrap() {

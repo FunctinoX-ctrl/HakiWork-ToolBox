@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "name": "pdf-tool",
+    "requiredHostAPIs": [
+        "fileDialog",
+        "saveDialog",
+        "showNotification",
+        "openPath"
+    ],
+    "description": "PDF专业处理",
+    "author": "HakiWork Team",
+    "category": "pdf",
+    "main": "src/index.ts",
+    "package": "com.hakiwork",
+    "ready": true
+}

@@ -11,7 +11,7 @@
     "sourceMap": false,
     "jsx": "react",
     "outDir": "./dist/plugins",
-    "rootDir": "./plugins",
+    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@shared/*": [
@@ -20,11 +20,11 @@
     }
   },
   "include": [
-    "plugins/**/*.ts",
-    "plugins/**/*.tsx"
+    "src/shared/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "plugins"
   ]
 }

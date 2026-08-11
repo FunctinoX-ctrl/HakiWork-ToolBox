@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "name": "table-tool",
+    "requiredHostAPIs": [
+        "fileDialog",
+        "saveDialog",
+        "showNotification",
+        "openPath"
+    ],
+    "description": "Excel/CSV表格批量处理",
+    "author": "HakiWork Team",
+    "category": "table",
+    "main": "src/index.ts",
+    "package": "com.hakiwork",
+    "ready": true
+}

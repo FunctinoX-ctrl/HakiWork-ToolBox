@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+﻿import React, { useState, useEffect, useCallback } from 'react'
 import Layout from './components/Layout'
 import WelcomePage from './components/WelcomePage'
 import PluginContainer from './plugins/PluginContainer'
@@ -16,12 +16,8 @@ export default function App() {
     window.hakiwork.onPluginListUpdated((pluginList: PluginEntry[]) => {
       console.log('[App] Plugin list received:', pluginList.map(p => p.id))
       setPlugins(pluginList)
-      const readyPlugin = pluginList.find(p => p.manifest?.ready)
-      if (readyPlugin && !activePluginId) {
-        setActivePluginId(readyPlugin.id)
-      }
     })
-  }, [activePluginId])
+  }, [])
 
   const handleSelectPlugin = useCallback((id: string) => {
     setActivePluginId(id || null)
@@ -39,6 +35,7 @@ export default function App() {
         <PluginContainer
           pluginId={activePluginId}
           manifest={plugins.find(p => p.id === activePluginId)?.manifest}
+          hostAPI={window.hakiwork?.hostAPI}
         />
       ) : (
         <WelcomePage pluginCount={readyPlugins.length} />

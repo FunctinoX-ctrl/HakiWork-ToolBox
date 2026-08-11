@@ -1,9 +1,8 @@
-import { defineConfig } from "vite"
+﻿import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import electron from "vite-plugin-electron"
 import renderer from "vite-plugin-electron-renderer"
 import { resolve, dirname } from "path"
-import { writeFileSync, existsSync, readFileSync } from "fs"
 import { fileURLToPath } from "url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

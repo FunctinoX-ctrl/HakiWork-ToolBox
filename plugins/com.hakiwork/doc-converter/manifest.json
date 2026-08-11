@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "name": "doc-converter",
+    "requiredHostAPIs": [
+        "fileDialog",
+        "saveDialog",
+        "showNotification",
+        "openPath"
+    ],
+    "description": "批量文档格式转换",
+    "author": "HakiWork Team",
+    "category": "file",
+    "main": "src/index.ts",
+    "package": "com.hakiwork",
+    "ready": true
+}

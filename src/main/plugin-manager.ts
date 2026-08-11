@@ -7,34 +7,72 @@ import { BasePlugin } from '@shared/plugin-base'
 
 export interface PluginEntry {
   id: string
+  package: string
   manifest: PluginManifest
   instance: BasePlugin | null
   error?: string
   enabled: boolean
+  source: 'compiled' | 'source' | 'community'
 }
 
-// In production: dist/main/plugin-manager.js -> ../../dist/plugins (compiled JS)
-// In dev: also ../../dist/plugins
-const BUNDLED_PLUGINS_DIR = path.join(__dirname, '../../dist/plugins')
-const COMPILED_PLUGINS_DIR = BUNDLED_PLUGINS_DIR
+const SOURCE_PLUGINS_DIR = path.join(__dirname, '../../../plugins')
+const COMPILED_PLUGINS_DIR = path.join(__dirname, '../../plugins')
+
+function getCommunityPluginsDir(): string {
+  const home = app.getPath('home')
+  return path.join(home, 'plugins', 'plugins-files')
+}
+
+// Recursively find all plugin dirs (package/plugin/ structure)
+function findPluginDirs(rootDir: string, source: 'compiled' | 'source' | 'community'): string[] {
+  const dirs: string[] = []
+  if (!fs.existsSync(rootDir)) return dirs
+  for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const pkgDir = path.join(rootDir, entry.name)
+    for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+      if (sub.isDirectory()) {
+        const pluginDir = path.join(pkgDir, sub.name)
+        // Check if it has a manifest.json
+        if (fs.existsSync(path.join(pluginDir, 'manifest.json'))) {
+          dirs.push(pluginDir)
+        }
+      }
+    }
+  }
+  return dirs
+}
 
 export class PluginManager {
   private plugins: Map<string, PluginEntry> = new Map()
 
   async scanAndLoadPlugins(): Promise<void> {
-    const dirs = this.getPluginDirs()
-    for (const dir of dirs) {
+    const allDirs = this.getAllPluginDirs()
+    for (const dir of allDirs) {
       await this.loadPluginFromDir(dir)
     }
   }
 
-  private getPluginDirs(): string[] {
+  private getAllPluginDirs(): string[] {
     const dirs: string[] = []
-    if (fs.existsSync(BUNDLED_PLUGINS_DIR)) {
-      for (const entry of fs.readdirSync(BUNDLED_PLUGINS_DIR, { withFileTypes: true })) {
-        if (entry.isDirectory()) dirs.push(path.join(BUNDLED_PLUGINS_DIR, entry.name))
+    const seen = new Set<string>()
+    const addDir = (dir: string, source: 'compiled' | 'source' | 'community') => {
+      if (!seen.has(dir)) {
+        seen.add(dir)
+        dirs.push(dir)
       }
     }
+
+    // 1. Community plugins (highest priority)
+    const communityDir = getCommunityPluginsDir()
+    for (const dir of findPluginDirs(communityDir, 'community')) addDir(dir, 'community')
+
+    // 2. Compiled plugins
+    for (const dir of findPluginDirs(COMPILED_PLUGINS_DIR, 'compiled')) addDir(dir, 'compiled')
+
+    // 3. Source plugins (development)
+    for (const dir of findPluginDirs(SOURCE_PLUGINS_DIR, 'source')) addDir(dir, 'source')
+
     return dirs
   }
 
@@ -45,7 +83,6 @@ export class PluginManager {
     let manifest: PluginManifest
     try {
       let raw = fs.readFileSync(manifestPath, 'utf8')
-      // Strip UTF-8 BOM if present
       if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1)
       manifest = JSON.parse(raw)
     } catch (err: any) {
@@ -69,11 +106,13 @@ export class PluginManager {
 
     this.plugins.set(pluginId, {
       id: pluginId,
+      package: manifest.package || 'com.hakiwork',
       manifest,
       instance: null,
       enabled: true,
+      source: 'source',
     })
-    console.log('[PluginManager] Loaded plugin: ' + pluginId + ' v' + manifest.version)
+    console.log('[PluginManager] Loaded plugin: ' + pluginId + ' v' + manifest.version + ' [' + (manifest.package || 'default') + ']')
   }
 
   getPluginList(): PluginEntry[] {
@@ -91,7 +130,7 @@ export class PluginManager {
 
     try {
       const pluginDir = this.findPluginDir(id)
-      // Use compiled .js from dist/plugins/
+      // Try compiled .js first, then .ts
       const jsEntryPath = path.join(pluginDir, entry.manifest.main.replace(/\.ts$/, '.js'))
       const tsEntryPath = path.join(pluginDir, entry.manifest.main)
       const entryPath = fs.existsSync(jsEntryPath) ? jsEntryPath : tsEntryPath
@@ -123,12 +162,43 @@ export class PluginManager {
   }
 
   private findPluginDir(id: string): string {
-    if (!fs.existsSync(BUNDLED_PLUGINS_DIR)) return BUNDLED_PLUGINS_DIR
-    for (const entry of fs.readdirSync(BUNDLED_PLUGINS_DIR, { withFileTypes: true })) {
-      if (entry.isDirectory() && entry.name === id) {
-        return path.join(BUNDLED_PLUGINS_DIR, entry.name)
+    // Check community first
+    const communityDir = getCommunityPluginsDir()
+    if (fs.existsSync(communityDir)) {
+      for (const entry of fs.readdirSync(communityDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue
+        const pkgDir = path.join(communityDir, entry.name)
+        for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+          if (sub.isDirectory() && sub.name === id && fs.existsSync(path.join(pkgDir, sub.name, 'manifest.json'))) {
+            return path.join(pkgDir, sub.name)
+          }
+        }
       }
     }
-    return BUNDLED_PLUGINS_DIR
+    // Check compiled
+    if (fs.existsSync(COMPILED_PLUGINS_DIR)) {
+      for (const entry of fs.readdirSync(COMPILED_PLUGINS_DIR, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue
+        const pkgDir = path.join(COMPILED_PLUGINS_DIR, entry.name)
+        for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+          if (sub.isDirectory() && sub.name === id && fs.existsSync(path.join(pkgDir, sub.name, 'manifest.json'))) {
+            return path.join(pkgDir, sub.name)
+          }
+        }
+      }
+    }
+    // Fallback to source
+    if (fs.existsSync(SOURCE_PLUGINS_DIR)) {
+      for (const entry of fs.readdirSync(SOURCE_PLUGINS_DIR, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue
+        const pkgDir = path.join(SOURCE_PLUGINS_DIR, entry.name)
+        for (const sub of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+          if (sub.isDirectory() && sub.name === id && fs.existsSync(path.join(pkgDir, sub.name, 'manifest.json'))) {
+            return path.join(pkgDir, sub.name)
+          }
+        }
+      }
+    }
+    return SOURCE_PLUGINS_DIR
   }
 }

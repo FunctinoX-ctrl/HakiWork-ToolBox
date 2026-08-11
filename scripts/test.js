@@ -10,7 +10,7 @@ const BUILD_ONLY = Args.includes('--build-only')
 const ESC = String.fromCharCode(27)
 
 function step(msg) {
-  console.log(ESC + '[1m' + ESC + '[33m▶ ' + msg + ESC + '[0m')
+  console.log(ESC + '[1m' + ESC + '[33m▼ ' + msg + ESC + '[0m')
 }
 
 function run(cmd, label) {
@@ -18,7 +18,6 @@ function run(cmd, label) {
   catch (err) { console.error(ESC + '[31mERROR:' + ESC + '[0m', label || cmd, err.message); process.exit(1) }
 }
 
-// Fix nested HTML path from Vite build
 function fixDist() {
   const nested = path.join(ROOT, 'dist', 'renderer', 'src', 'renderer', 'index.html')
   const final  = path.join(ROOT, 'dist', 'renderer', 'index.html')
@@ -31,20 +30,92 @@ function fixDist() {
   }
 }
 
-// Copy manifest.json from source plugins/ to dist/plugins/
-function copyManifests() {
-  const srcDir = path.join(ROOT, 'plugins')
-  const dstDir = path.join(ROOT, 'dist', 'plugins')
-  if (!fs.existsSync(srcDir)) return
-  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue
-    const srcManifest = path.join(srcDir, entry.name, 'manifest.json')
-    const dstManifest = path.join(dstDir, entry.name, 'manifest.json')
-    if (fs.existsSync(srcManifest) && !fs.existsSync(dstManifest)) {
-      fs.copyFileSync(srcManifest, dstManifest)
-      console.log('Copied manifest:', entry.name)
+function compilePlugins() {
+  step('Compile plugins')
+  const pluginsSrcDir = path.join(ROOT, 'plugins')
+  const pluginsDistDir = path.join(ROOT, 'dist', 'plugins')
+
+  if (fs.existsSync(pluginsDistDir)) {
+    fs.rmSync(pluginsDistDir, { recursive: true, force: true })
+  }
+  fs.mkdirSync(pluginsDistDir, { recursive: true })
+
+  if (!fs.existsSync(pluginsSrcDir)) {
+    console.log(ESC + '[33m⚠ No plugins source directory found' + ESC + '[0m')
+    return
+  }
+
+  // Copy shared types to dist for resolution
+  const sharedSrc = path.join(ROOT, 'src', 'shared')
+  const sharedDst = path.join(pluginsDistDir, 'src', 'shared')
+  if (fs.existsSync(sharedSrc)) {
+    fs.mkdirSync(sharedDst, { recursive: true })
+    for (const f of fs.readdirSync(sharedSrc)) {
+      if (f.endsWith('.ts') || f.endsWith('.d.ts')) {
+        fs.copyFileSync(path.join(sharedSrc, f), path.join(sharedDst, f))
+      }
     }
   }
+
+  const packages = fs.readdirSync(pluginsSrcDir, { withFileTypes: true })
+    .filter(e => e.isDirectory())
+    .map(e => e.name)
+
+  for (const pkg of packages) {
+    const pkgSrcDir = path.join(pluginsSrcDir, pkg)
+    const pkgDistDir = path.join(pluginsDistDir, pkg)
+    fs.mkdirSync(pkgDistDir, { recursive: true })
+
+    const pluginDirs = fs.readdirSync(pkgSrcDir, { withFileTypes: true })
+      .filter(e => e.isDirectory() && fs.existsSync(path.join(pkgSrcDir, e.name, 'manifest.json')))
+      .map(e => e.name)
+
+    for (const pluginName of pluginDirs) {
+      const pluginSrcDir = path.join(pkgSrcDir, pluginName)
+      const pluginDistDir = path.join(pkgDistDir, pluginName)
+      fs.mkdirSync(pluginDistDir, { recursive: true })
+
+      // Copy manifest
+      const manifestSrc = path.join(pluginSrcDir, 'manifest.json')
+      if (fs.existsSync(manifestSrc)) {
+        fs.copyFileSync(manifestSrc, path.join(pluginDistDir, 'manifest.json'))
+      }
+
+      const srcDir = path.join(pluginSrcDir, 'src')
+      if (!fs.existsSync(srcDir)) continue
+      const dstSrcDir = path.join(pluginDistDir, 'src')
+      fs.mkdirSync(dstSrcDir, { recursive: true })
+
+      const tsFiles = fs.readdirSync(srcDir)
+        .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
+
+      for (const file of tsFiles) {
+        const srcFile = path.join(srcDir, file)
+        const isTsx = file.endsWith('.tsx')
+        const outFile = isTsx ? file.replace('.tsx', '.js') : file.replace('.ts', '.js')
+        const dstFile = path.join(dstSrcDir, outFile)
+
+        try {
+          const esbuild = require('esbuild')
+          esbuild.buildSync({
+            entryPoints: [srcFile],
+            outfile: dstFile,
+            bundle: true,
+            platform: 'node',
+            target: 'node18',
+            format: 'cjs',
+            external: ['electron', 'react', 'react-dom'],
+            tsconfig: path.join(ROOT, 'tsconfig.plugins.json'),
+          })
+        } catch (e) {
+          fs.copyFileSync(srcFile, dstFile)
+        }
+      }
+
+      console.log(ESC + '[32m  ✓ ' + pluginName + ' compiled' + ESC + '[0m')
+    }
+  }
+  console.log(ESC + '[32m✓ Plugin compilation complete' + ESC + '[0m')
 }
 
 step('HakiWork v1.0.0')
@@ -56,7 +127,7 @@ if (BUILD_ONLY) {
   step('Compile renderer')
   run('npx vite build --mode renderer')
   fixDist()
-  copyManifests()
+  compilePlugins()
   console.log(ESC + '[32m✓ Build complete' + ESC + '[0m')
   process.exit(0)
 }
@@ -68,8 +139,8 @@ if (!SKIP_BUILD) {
   step('Compile renderer')
   run('npx vite build --mode renderer')
   fixDist()
-  copyManifests()
-} else { console.log('Skip build (--skip-build)'); copyManifests() }
+  compilePlugins()
+} else { console.log('Skip build (--skip-build)'); compilePlugins() }
 
 const electronCli = path.join(ROOT, 'node_modules', 'electron', 'cli.js')
 const child = spawn(process.execPath, [electronCli, '.'], {

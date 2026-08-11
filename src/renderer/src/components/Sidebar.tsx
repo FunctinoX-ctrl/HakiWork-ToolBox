@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { PluginEntry } from '@shared/plugin-base';
 
 interface SidebarProps {
@@ -27,7 +27,13 @@ export default function Sidebar({ plugins, activePluginId, onSelectPlugin }: Sid
 
   const handlePluginsClick = () => {
     if (readyPlugins.length > 0) {
-      onSelectPlugin(readyPlugins[0].id);
+      if (activePluginId === readyPlugins[0].id) {
+        onSelectPlugin('');
+      } else {
+        onSelectPlugin(readyPlugins[0].id);
+      }
+    } else {
+      onSelectPlugin('');
     }
   };
 
@@ -43,11 +49,13 @@ export default function Sidebar({ plugins, activePluginId, onSelectPlugin }: Sid
           <button
             key={item.id}
             className={`haki-nav-item${isActive(item.id) ? ' haki-nav-item-active' : ''}`}
-            onClick={
-              item.id === 'home'
-                ? () => onSelectPlugin('')
-                : handlePluginsClick
-            }
+            onClick={() => {
+              if (item.id === 'home') {
+                onSelectPlugin('');
+              } else {
+                handlePluginsClick();
+              }
+            }}
           >
             <img src={iconUrl(item.icon)} alt={item.label} className="haki-nav-icon" />
             {item.label}
