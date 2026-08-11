@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="none" stroke="#84C9BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+  <!-- 页面边角装饰：蜷缩睡觉的哈基米，低透明度 -->
+  <!-- 蜷缩身体轮廓 -->
+  <path d="M40 100 Q25 95 28 75 Q30 55 50 52 Q55 40 70 42 Q85 40 90 52 Q110 55 112 75 Q115 95 100 100" />
+  <!-- 尾巴环绕 -->
+  <path d="M100 100 Q120 98 122 80 Q123 65 112 62" />
+  <!-- 头部（埋在身体里，只露一点） -->
+  <path d="M45 78 Q42 68 50 64 Q58 62 62 70" />
+  <!-- 耳朵尖 -->
+  <path d="M48 66 L46 55 L55 62" />
+  <!-- 闭眼线 -->
+  <path d="M50 74 Q53 72 56 74" />
+  <!-- Zzz 气泡 -->
+  <text x="85" y="55" font-size="14" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+  <text x="95" y="45" font-size="10" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+  <text x="102" y="38" font-size="7" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+</svg>

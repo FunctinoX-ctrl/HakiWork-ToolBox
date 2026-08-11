@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#84C9BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 成功提示小图标：迷你哈基米头 + 对勾 -->
+  <!-- 外圈 -->
+  <circle cx="32" cy="32" r="28" stroke-dasharray="3 3" opacity="0.4" />
+  <!-- 头部简化 -->
+  <path d="M20 30 Q16 40 22 48 Q28 54 32 54 Q36 54 42 48 Q48 40 44 30" />
+  <path d="M22 28 L19 14 L32 24" />
+  <path d="M42 28 L45 14 L32 24" />
+  <!-- 闭眼笑 -->
+  <path d="M26 36 Q29 33 32 36" />
+  <path d="M32 36 Q35 33 38 36" />
+  <!-- 对勾（右下） -->
+  <path d="M44 44 L50 50 L58 40" stroke-width="2.5" />
+</svg>

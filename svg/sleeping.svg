@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none" stroke="#84C9BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 待机/休息状态：趴着睡觉的哈基米 -->
+  <!-- 身体（趴卧） -->
+  <path d="M40 110 Q30 100 38 88 Q45 76 60 78 L140 78 Q155 76 162 88 Q170 100 160 110 L155 120 Q150 125 145 122 L55 122 Q50 125 45 120 Z" />
+  <!-- 头部（枕在前爪上） -->
+  <path d="M55 78 Q48 60 62 50 Q75 44 85 52 Q95 44 108 50 Q122 60 115 78" />
+  <!-- 耳朵 -->
+  <path d="M62 52 L58 35 L75 46" />
+  <path d="M108 52 L112 35 L95 46" />
+  <!-- 闭眼（两道弯线） -->
+  <path d="M72 64 Q76 61 80 64" />
+  <path d="M90 64 Q94 61 98 64" />
+  <!-- 鼻子 -->
+  <path d="M82 70 L86 70 L84 73 Z" fill="#84C9BF" stroke="none" />
+  <!-- 前爪（垫在头下） -->
+  <path d="M60 82 Q65 88 72 85" />
+  <path d="M98 85 Q105 88 110 82" />
+  <!-- 后腿 -->
+  <path d="M145 105 Q152 112 158 108" />
+  <!-- 尾巴（搭在身侧） -->
+  <path d="M160 100 Q175 95 172 80 Q170 70 162 72" />
+  <!-- Zzz -->
+  <text x="120" y="48" font-size="16" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+  <text x="132" y="36" font-size="12" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+  <text x="140" y="28" font-size="8" fill="#84C9BF" stroke="none" font-family="sans-serif">z</text>
+</svg>

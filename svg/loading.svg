@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" stroke="#84C9BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 加载动画：哈基米头部呼吸效果 -->
+  <!-- 使用 CSS 动画实现呼吸缩放 -->
+  <style>
+    .hakimi-body { transform-origin: 60px 65px; animation: breathe 1.8s ease-in-out infinite; }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    .tail { transform-origin: 88px 82px; animation: wag 1.2s ease-in-out infinite; }
+    @keyframes wag {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(8deg); }
+    }
+  </style>
+
+  <g class="hakimi-body">
+    <!-- 耳朵 -->
+    <path d="M38 48 L33 24 L56 38" />
+    <path d="M82 48 L87 24 L64 38" />
+    <!-- 头部 -->
+    <path d="M35 52 Q28 72 38 90 Q50 108 60 110 Q70 108 82 90 Q92 72 85 52" />
+    <path d="M38 48 Q60 36 82 48" />
+    <!-- 闭眼 -->
+    <path d="M48 70 Q53 66 58 70" />
+    <path d="M62 70 Q67 66 72 70" />
+    <!-- 鼻子 -->
+    <path d="M57 80 L63 80 L60 84 Z" fill="#84C9BF" stroke="none" />
+    <!-- 嘴巴 -->
+    <path d="M60 84 Q56 90 51 87" />
+    <path d="M60 84 Q64 90 69 87" />
+    <!-- 胡须 -->
+    <path d="M42 78 L30 75" />
+    <path d="M42 83 L29 85" />
+    <path d="M78 78 L90 75" />
+    <path d="M78 83 L91 85" />
+  </g>
+
+  <!-- 尾巴（独立摆动） -->
+  <g class="tail">
+    <path d="M82 92 Q100 88 102 72 Q103 60 94 58" />
+  </g>
+</svg>

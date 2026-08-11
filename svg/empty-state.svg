@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" fill="none" stroke="#84C9BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 空状态插画：坐姿哈基米抬头看，旁边一个空文件框 -->
+  <!-- 小动物身体（坐姿偏左） -->
+  <path d="M55 130 Q48 155 58 172 L98 172 Q108 155 101 130" />
+  <!-- 头部 -->
+  <path d="M52 95 Q44 115 54 133 Q66 152 88 154 Q110 152 122 133 Q132 115 124 95" />
+  <!-- 耳朵 -->
+  <path d="M56 92 L50 65 L74 80" />
+  <path d="M120 92 L126 65 L102 80" />
+  <path d="M56 92 Q88 78 120 92" />
+  <!-- 眼睛（圆眼，好奇表情） -->
+  <circle cx="72" cy="112" r="3" fill="#84C9BF" stroke="none" />
+  <circle cx="104" cy="112" r="3" fill="#84C9BF" stroke="none" />
+  <!-- 鼻子嘴巴 -->
+  <path d="M85 122 L91 122 L88 126 Z" fill="#84C9BF" stroke="none" />
+  <path d="M88 126 Q83 132 77 129" />
+  <path d="M88 126 Q93 132 99 129" />
+  <!-- 胡须 -->
+  <path d="M62 120 L48 117" />
+  <path d="M62 125 L47 127" />
+  <path d="M114 120 L128 117" />
+  <path d="M114 125 L129 127" />
+  <!-- 前爪 -->
+  <path d="M70 168 Q73 173 77 171" />
+  <path d="M82 171 Q86 173 89 168" />
+  <!-- 尾巴 -->
+  <path d="M98 162 Q120 158 122 140 Q123 125 112 123" />
+
+  <!-- 右侧空文件框 -->
+  <rect x="148" y="95" width="72" height="85" rx="6" stroke-dasharray="5 4" />
+  <path d="M162 115 L198 115" />
+  <path d="M162 130 L190 130" />
+  <path d="M162 145 L185 145" />
+  <!-- 问号气泡 -->
+  <circle cx="195" cy="80" r="14" />
+  <path d="M189 74 Q195 68 200 73 Q204 78 198 82 L196 86" />
+  <circle cx="196" cy="91" r="1.5" fill="#84C9BF" stroke="none" />
+</svg>
